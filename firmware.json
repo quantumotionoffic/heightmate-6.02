@@ -1,0 +1,7 @@
+{
+  "version": "1.2.3",
+  "file": "firmware_v1.2.3.bin",
+  "notes": "Improved accuracy, Bluetooth stability",
+  "minVersion": "1.0.0",
+  "checksum": "abc123xyz"
+}

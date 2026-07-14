@@ -1,0 +1,16 @@
+{
+  "name": "HeightMate Pro",
+  "short_name": "HeightMate",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#9B59B6",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192 256x256 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

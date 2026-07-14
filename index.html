@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HeightMate Pro - Family Growth Tracker 🌱</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Bubblegum+Sans&display=swap"
+        rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="stylesheet" href="css/styles.css?v=6.1">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#9B59B6">
+</head>
+
+<body>
+    <div class="sun-ball"></div>
+    <div class="cloud cloud-1"></div>
+    <div class="cloud cloud-2"></div>
+    <div class="spinner" id="spinner"></div>
+
+    <!-- LOGIN -->
+    <div class="login-screen" id="loginScreen">
+        <div class="login-card">
+            <div class="login-title">🌈 HeightMate Pro</div>
+            <div class="login-sub">Track Your Family's Growth!</div>
+            <div id="authMsg"></div>
+            <div id="loginForm">
+                <input class="inp" id="lEmail" type="email" placeholder="Email Address">
+                <input class="inp" id="lPass" type="password" placeholder="Password">
+                <button class="btn" onclick="doLogin()">🔑 Login</button>
+                <div style="text-align:right;margin-top:4px;">
+                    <span class="forgot-link" onclick="openForgotModal()">Forgot password?</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;margin:16px 0 10px;">
+                    <div style="flex:1;height:2px;background:rgba(155,89,182,.2);border-radius:2px;"></div>
+                    <span style="color:#aaa;font-size:.95rem;font-weight:600;">or</span>
+                    <div style="flex:1;height:2px;background:rgba(155,89,182,.2);border-radius:2px;"></div>
+                </div>
+                <button class="google-btn" onclick="signInWithGoogle()">
+                    <svg class="google-icon" viewBox="0 0 48 48">
+                        <path fill="#EA4335"
+                            d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+                        <path fill="#4285F4"
+                            d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                        <path fill="#FBBC05"
+                            d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                        <path fill="#34A853"
+                            d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.29-8.16 2.29-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+                        <path fill="none" d="M0 0h48v48H0z" />
+                    </svg>
+                    Continue with Google
+                </button>
+                <div style="display:flex;align-items:center;gap:10px;margin:10px 0 6px;">
+                    <div style="flex:1;height:2px;background:rgba(155,89,182,.2);border-radius:2px;"></div>
+                    <span style="color:#aaa;font-size:.95rem;font-weight:600;">or</span>
+                    <div style="flex:1;height:2px;background:rgba(155,89,182,.2);border-radius:2px;"></div>
+                </div>
+                <button class="btn" onclick="guestLogin()"
+                    style="background:linear-gradient(135deg,#636e72,#b2bec3);margin-top:0;">👤 Continue as
+                    Guest</button>
+                <p style="color:#aaa;font-size:.85rem;margin-top:8px;">Guest data is stored locally on this device only
+                </p>
+                <p class="toggle-auth" onclick="swapAuth()">Don't have an account? Sign up!</p>
+            </div>
+            <div id="signupForm" style="display:none">
+                <input class="inp" id="sFamily" type="text" placeholder="Family Name (e.g. Smith Family)">
+                <input class="inp" id="sEmail" type="email" placeholder="Email Address">
+                <input class="inp" id="sPass" type="password" placeholder="Password (min 6 characters)">
+                <button class="btn" onclick="doSignup()">🎉 Create Account</button>
+                <div style="display:flex;align-items:center;gap:10px;margin:14px 0 10px;">
+                    <div style="flex:1;height:2px;background:rgba(155,89,182,.2);border-radius:2px;"></div>
+                    <span style="color:#aaa;font-size:.95rem;font-weight:600;">or sign up with</span>
+                    <div style="flex:1;height:2px;background:rgba(155,89,182,.2);border-radius:2px;"></div>
+                </div>
+                <button class="google-btn" onclick="signInWithGoogle()">
+                    <svg class="google-icon" viewBox="0 0 48 48">
+                        <path fill="#EA4335"
+                            d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z" />
+                        <path fill="#4285F4"
+                            d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z" />
+                        <path fill="#FBBC05"
+                            d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z" />
+                        <path fill="#34A853"
+                            d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.29-8.16 2.29-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z" />
+                        <path fill="none" d="M0 0h48v48H0z" />
+                    </svg>
+                    Sign up with Google
+                </button>
+                <p class="toggle-auth" onclick="swapAuth()">Already have an account? Login!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOP NAV -->
+    <nav class="top-nav" id="topNav">
+        <div class="nav-brand" id="navName">🌈 HeightMate Pro</div>
+        <div class="nav-actions">
+            <button class="nav-btn" title="Export" onclick="exportAll()">📤</button>
+            <button class="nav-btn" title="Settings" onclick="togDrop()" id="setBtn">⚙️</button>
+            <button class="nav-btn" title="Logout" onclick="doLogout()">👋</button>
+        </div>
+        <div class="drop" id="dropMenu">
+            <div class="drop-item" onclick="openFamilyModal();togDrop()"><span class="drop-label">✏️ Edit Family
+                    Name</span><span>→</span></div>
+            <div class="drop-hd">⚙️ Settings</div>
+            <div class="drop-item"><span class="drop-label">🌙 Dark Mode</span>
+                <div class="tog" id="togDark" onclick="togDarkMode()"></div>
+            </div>
+            <div class="drop-item"><span class="drop-label">📏 Use Imperial (lbs/in)</span>
+                <div class="tog" id="togUnit" onclick="togUnit()"></div>
+            </div>
+            <div class="drop-item"><span class="drop-label">🎉 Confetti Effects</span>
+                <div class="tog on" id="togConf" onclick="togConfetti()"></div>
+            </div>
+            <div class="drop-item"><span class="drop-label">🔔 Notifications</span>
+                <div class="tog on" id="togNotif" onclick="togNotif()"></div>
+            </div>
+            <div class="drop-item" onclick="exportAll();togDrop()"><span class="drop-label">📤 Export All
+                    Data (CSV)</span><span>→</span></div>
+            <div class="drop-item" onclick="exportPDF();togDrop()"><span class="drop-label" style="color:var(--teal)">📄 Export PDF Report</span><span>→</span></div>
+            <div class="drop-item" onclick="doLogout()"><span class="drop-label" style="color:var(--pink)">👋
+                    Logout</span><span>→</span></div>
+            <div class="drop-item" onclick="document.getElementById('changePassModal').classList.add('open');togDrop()">
+                <span class="drop-label">🔒 Change Password</span><span>→</span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN APP -->
+    <div class="container" id="mainApp">
+        <!-- 1. DASHBOARD TAB -->
+        <div id="pane-dashboard" class="tab-pane active">
+            <header>
+                <h1 id="familyTitle">🌈 HeightMate Pro 🌈</h1>
+                <p class="tagline">Track Every Kid's Amazing Growth Journey! 📏✨</p>
+            </header>
+
+            <div class="milestone" id="milestoneBanner">
+                <span id="milestoneText"></span>
+                <button class="xbtn" onclick="this.parentElement.classList.remove('show')">✕</button>
+            </div>
+
+            <!-- REMINDER BANNER -->
+            <div class="reminder-bar" id="reminderBar">
+                <span>⏰</span>
+                <span id="reminderText">Time to measure again!</span>
+                <button class="rbtn" onclick="switchAppTab('dashboard'); switchTabAndScroll();">📏 Measure Now</button>
+                <button class="rbtn" style="background:rgba(0,0,0,.2)"
+                    onclick="document.getElementById('reminderBar').classList.remove('show')">✕</button>
+            </div>
+
+            <!-- DASHBOARD -->
+            <div class="dashboard" id="dashboardPanel">
+                <div class="dash-title">🏠 Family Dashboard</div>
+                <div class="dash-grid" id="dashGrid">
+                    <div class="dash-tile t1">
+                        <div class="dash-tile-ico">👶</div>
+                        <div class="dash-tile-val" id="dProfiles">—</div>
+                        <div class="dash-tile-lbl">Profiles</div>
+                    </div>
+                    <div class="dash-tile t2">
+                        <div class="dash-tile-ico">📏</div>
+                        <div class="dash-tile-val" id="dLastMeas">—</div>
+                        <div class="dash-tile-lbl">Last Measurement</div>
+                    </div>
+                    <div class="dash-tile t3">
+                        <div class="dash-tile-ico">📈</div>
+                        <div class="dash-tile-val" id="dGrowthStatus">—</div>
+                        <div class="dash-tile-lbl">Growth Status</div>
+                    </div>
+                    <div class="dash-tile t4">
+                        <div class="dash-tile-ico">🔢</div>
+                        <div class="dash-tile-val" id="dTotalMeas">—</div>
+                        <div class="dash-tile-lbl">Total Measurements</div>
+                    </div>
+                    <div class="dash-tile t5">
+                        <div class="dash-tile-ico">📐</div>
+                        <div class="dash-tile-val" id="dCurHeight">—</div>
+                        <div class="dash-tile-lbl">Selected Height</div>
+                    </div>
+                    <div class="dash-tile t6">
+                        <div class="dash-tile-ico">⏳</div>
+                        <div class="dash-tile-val" id="dNextMeas">—</div>
+                        <div class="dash-tile-lbl">Next Reminder</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ENTRY SECTION -->
+            <div class="entry-section">
+                <h3 style="font-family:'Bubblegum Sans',cursive;color:var(--teal);margin-bottom:15px;text-align:center;">📱
+                    Add a Measurement</h3>
+                <div class="entry-tabs">
+                    <button class="entry-tab active" onclick="switchTab('bt',this)">🔵 Bluetooth Device</button>
+                    <button class="entry-tab" onclick="switchTab('manual',this)">✏️ Manual Entry</button>
+                    <button class="entry-tab" onclick="switchTab('weight',this)">⚖️ Log Weight + BMI</button>
+                </div>
+
+                <div class="entry-panel active" id="panel-bt" style="text-align:center;">
+                    <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap; margin-bottom:10px;">
+                        <button class="bt-btn" id="btBtn" onclick="connectBT()" style="margin:0;">🔵 Connect Device</button>
+                        <button class="bt-btn" id="measureHeightBtn" onclick="triggerMeasureHeight()" disabled style="margin:0; background:var(--teal); opacity:0.5;">
+                            📏 Measure Now
+                        </button>
+                    </div>
+                    <div class="bt-status" id="btStatus"><span style="color:var(--pink)">⚪ Not Connected</span></div>
+                </div>
+
+                <div class="entry-panel" id="panel-manual" style="text-align:center;">
+                    <div class="manual-row">
+                        <input class="inp" id="manH" type="number" placeholder="Height (cm)" min="50" max="250" step="0.1">
+                        <button class="btn" onclick="addManualH()"
+                            style="width:auto;margin:0;padding:14px 28px;font-size:1rem;">📏 Record Height</button>
+                    </div>
+                </div>
+
+                <div class="entry-panel" id="panel-weight" style="text-align:center;">
+                    <div class="manual-row">
+                        <input class="inp" id="manW" type="number" placeholder="Weight (kg)" min="5" max="300" step="0.1">
+                        <button class="btn" onclick="addWeight()"
+                            style="width:auto;margin:0;padding:14px 28px;font-size:1rem;">⚖️ Calculate BMI</button>
+                    </div>
+                    <div class="bmi-result" id="bmiResult"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. ANALYTICS TAB -->
+        <div id="pane-analytics" class="tab-pane">
+            <div class="tab-header">
+                <h2>📈 Growth Analytics</h2>
+                <p>Track your child's historical metrics and growth trends</p>
+            </div>
+
+            <div class="analytics-layout">
+                <!-- Stats -->
+                <div class="card">
+                    <div class="card-title"><span class="emoji">📊</span>Growth Stats</div>
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <div class="stat-num" id="stTotal">0</div>
+                            <div class="stat-lbl">Total Checks</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-num" id="stGrowth">0</div>
+                            <div class="stat-lbl">cm Grown!</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-num" id="stCurrent">--</div>
+                            <div class="stat-lbl">Current Height</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-num" id="stAvg">0</div>
+                            <div class="stat-lbl">cm/month</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Growth Chart -->
+                <div class="card full-span">
+                    <div class="card-title" style="justify-content:space-between;flex-wrap:wrap;gap:10px;">
+                        <span style="display:flex;align-items:center;gap:10px;"><span class="emoji">📈</span>Growth Chart</span>
+                        <div class="chart-tabs">
+                            <button class="ctab active" onclick="switchChartTab('height',this)">📏 Height</button>
+                            <button class="ctab" onclick="switchChartTab('monthly',this)">📅 Monthly Growth</button>
+                            <button class="ctab" onclick="switchChartTab('bmi',this)">⚖️ BMI Trend</button>
+                            <button class="ctab" onclick="switchChartTab('prediction',this)">🔮 Yearly Prediction</button>
+                        </div>
+                    </div>
+                    <div class="chart-container"><canvas id="mainChart"></canvas></div>
+                </div>
+
+                <!-- History -->
+                <div class="card full-span">
+                    <div class="card-title" style="justify-content:space-between;flex-wrap:wrap;gap:10px;">
+                        <span style="display:flex;align-items:center;gap:10px;"><span class="emoji">📜</span>Measurement History</span>
+                        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                            <button class="export-btn" onclick="exportProfile()">📥 CSV</button>
+                            <button class="pdf-btn" onclick="downloadPDF()">📄 Growth Report PDF</button>
+                        </div>
+                    </div>
+                    <div class="hist-list" id="histList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. COACH TAB -->
+        <div id="pane-coach" class="tab-pane">
+            <div class="tab-header">
+                <h2>🤖 Growth Coach AI</h2>
+                <p>Get data-driven pediatric insights and personalized advice</p>
+            </div>
+
+            <!-- Growth Intelligence (AI Insights) -->
+            <div class="card intel-card full-span" style="margin-bottom: 25px;">
+                <div class="card-title"><span class="emoji">🧠</span>Growth Intelligence</div>
+                <div id="intelContent">
+                    <p class="no-data">Select a profile and add measurements to see insights! 💡</p>
+                </div>
+            </div>
+
+            <!-- AI GROWTH ASSISTANT -->
+            <div class="ai-section" id="aiSection" style="margin-top:0;">
+                <div class="ai-title"><span style="font-size:2.2rem;animation:bounce 2s ease-in-out infinite">🤖</span>AI Growth Assistant</div>
+                <div class="ai-quick-btns">
+                    <button class="ai-quick" onclick="aiQuick('Predict my child\'s adult height')">🔮 Predict Adult Height</button>
+                    <button class="ai-quick" onclick="aiQuick('What is the current growth percentile?')">📊 Growth Percentile</button>
+                    <button class="ai-quick" onclick="aiQuick('What is the growth velocity and is it healthy?')">⚡ Growth Velocity</button>
+                    <button class="ai-quick" onclick="aiQuick('Give me personalized nutrition advice for growth')">🥗 Nutrition Tips</button>
+                    <button class="ai-quick" onclick="aiQuick('Is my child\'s BMI healthy for their age?')">⚖️ BMI Analysis</button>
+                    <button class="ai-quick" onclick="aiQuick('What should I expect in the next 6 months?')">📅 6-Month Forecast</button>
+                </div>
+                <div class="ai-chat-box" id="aiChatBox">
+                    <div class="ai-msg ai">
+                        <div class="ai-avatar">🤖</div>
+                        <div class="ai-bubble">👋 Hi! I'm your AI Growth Assistant. I can analyze your child's growth data, predict adult height, calculate growth percentiles, and give personalized health insights. Select a profile and ask me anything!</div>
+                    </div>
+                </div>
+                <div class="ai-input-row">
+                    <input class="ai-input" id="aiInput" type="text"
+                        placeholder="Ask about growth, height prediction, BMI..."
+                        onkeydown="if(event.key==='Enter')sendAIMessage()">
+                    <button class="ai-send-btn" id="aiSendBtn" onclick="sendAIMessage()">🚀</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. FAMILY TAB -->
+        <div id="pane-family" class="tab-pane">
+            <div class="tab-header">
+                <h2>👪 Family Members</h2>
+                <p>Manage kid profiles, track achievements, and check activity logs</p>
+            </div>
+
+            <!-- PROFILES -->
+            <div class="profile-section">
+                <h3 style="font-family:'Bubblegum Sans',cursive;color:var(--pink);margin-bottom:20px;">👶 Kid Profiles</h3>
+                <div class="profile-grid" id="profileGrid"></div>
+            </div>
+
+            <div class="family-layout">
+                <!-- Achievements -->
+                <div class="card" style="margin-bottom: 25px;">
+                    <div class="card-title"><span class="emoji">🏆</span>Achievements</div>
+                    <div class="ach-grid" id="achGrid"></div>
+                </div>
+
+                <!-- NOTIFICATIONS -->
+                <div class="notif-section" id="notifSection" style="margin-top:0;">
+                    <div class="notif-title">
+                        <span style="font-size:2.2rem;animation:bounce 2s ease-in-out infinite">🔔</span>
+                        Notifications & Alerts
+                        <span class="notif-badge" id="notifBadge">0</span>
+                    </div>
+                    <div class="notif-send-row">
+                        <button class="notif-type-btn sel" id="ntBtn1" onclick="sendNotif('height_update')">📏 Height Update</button>
+                        <button class="notif-type-btn" id="ntBtn2" onclick="sendNotif('growth_alert')">📈 Growth Alert</button>
+                        <button class="notif-type-btn" id="ntBtn3" onclick="sendNotif('reminder')">⏰ Reminder</button>
+                        <button class="notif-type-btn" id="ntBtn4" onclick="sendNotif('milestone')">🏆 Milestone</button>
+                        <button class="notif-type-btn" id="ntBtn5" onclick="sendNotif('ai_prediction')">🤖 AI Prediction</button>
+                    </div>
+                    <div id="notifList">
+                        <p class="no-data">No notifications yet. They will appear here as your child grows! 🌱</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. PROFILE TAB -->
+        <div id="pane-profile" class="tab-pane">
+            <div class="tab-header">
+                <h2>⚙️ Settings & Settings</h2>
+                <p>Manage family configurations, data operations, and smart devices</p>
+            </div>
+
+            <div class="profile-dashboard">
+                <div class="profile-user-card">
+                    <div class="user-avatar">🏡</div>
+                    <div class="user-details">
+                        <h3 id="profileFamilyName">🌈 My Family</h3>
+                        <p id="profileUserEmail">Guest Mode Active</p>
+                    </div>
+                </div>
+
+                <div class="settings-grid">
+                    <!-- Config Controls Card -->
+                    <div class="card">
+                        <div class="card-title"><span class="emoji">🛠️</span>Family Settings</div>
+                        <div class="settings-list">
+                            <div class="settings-item" onclick="openFamilyModal()">
+                                <div class="item-info">
+                                    <span class="item-icon">✏️</span>
+                                    <span>Edit Family Name</span>
+                                </div>
+                                <span class="arrow">→</span>
+                            </div>
+                            <div class="settings-item" onclick="togDarkMode()">
+                                <div class="item-info">
+                                    <span class="item-icon">🌙</span>
+                                    <span>Dark Mode</span>
+                                </div>
+                                <div class="tog" id="profileTogDark"></div>
+                            </div>
+                            <div class="settings-item" onclick="togUnit()">
+                                <div class="item-info">
+                                    <span class="item-icon">📏</span>
+                                    <span>Use Imperial Units (lbs/in)</span>
+                                </div>
+                                <div class="tog" id="profileTogUnit"></div>
+                            </div>
+                            <div class="settings-item" onclick="togConfetti()">
+                                <div class="item-info">
+                                    <span class="item-icon">🎉</span>
+                                    <span>Confetti Effects</span>
+                                </div>
+                                <div class="tog" id="profileTogConf"></div>
+                            </div>
+                            <div class="settings-item" onclick="togNotif()">
+                                <div class="item-info">
+                                    <span class="item-icon">🔔</span>
+                                    <span>Notifications</span>
+                                </div>
+                                <div class="tog" id="profileTogNotif"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Security & Data Ops Card -->
+                    <div class="card">
+                        <div class="card-title"><span class="emoji">💾</span>Data & Privacy</div>
+                        <div class="settings-list">
+                            <div class="settings-item" onclick="exportAll()">
+                                <div class="item-info">
+                                    <span class="item-icon">📤</span>
+                                    <span>Export All Data (CSV)</span>
+                                </div>
+                                <span class="arrow">→</span>
+                            </div>
+                            <div class="settings-item" onclick="exportPDF()">
+                                <div class="item-info">
+                                    <span class="item-icon">📄</span>
+                                    <span>Export PDF Growth Report</span>
+                                </div>
+                                <span class="arrow">→</span>
+                            </div>
+                            <div class="settings-item" onclick="document.getElementById('changePassModal').classList.add('open')">
+                                <div class="item-info">
+                                    <span class="item-icon">🔒</span>
+                                    <span>Change Password</span>
+                                </div>
+                                <span class="arrow">→</span>
+                            </div>
+                            <div class="settings-item logout-btn" onclick="doLogout()">
+                                <div class="item-info">
+                                    <span class="item-icon">👋</span>
+                                    <span style="color:var(--pink)">Logout</span>
+                                </div>
+                                <span class="arrow">→</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FIRMWARE UPDATE (Moved here under devices) -->
+                <div class="fw-section" id="fwSection" style="margin-top:25px;">
+                    <div class="fw-title"><span style="font-size:2.2rem;animation:bounce 2s ease-in-out infinite">📡</span>Device Firmware Update</div>
+                    <div class="fw-card">
+                        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:14px;">
+                            <div>
+                                <div style="font-weight:700;color:var(--txt);margin-bottom:4px;">HeightMate Device</div>
+                                <div style="color:var(--txt2);font-size:.95rem;" id="fwDeviceName">Not connected — connect via Bluetooth first</div>
+                            </div>
+                            <div class="fw-version-badge">📦 Current: v<span id="fwCurrentVersion">1.0.0</span></div>
+                        </div>
+                        <div class="fw-update-available" id="fwUpdatePanel">
+                            <div style="font-size:1.5rem;margin-bottom:8px;">🆕</div>
+                            <div style="font-weight:700;font-size:1.1rem;color:#0984e3;margin-bottom:4px;">New Firmware Available: v<span id="fwLatestVersion">1.2.3</span></div>
+                            <div style="color:var(--txt2);margin-bottom:14px;font-size:.95rem;">Improved accuracy, faster readings, better Bluetooth stability</div>
+                            <div class="fw-changelog">
+                                <strong>📋 Changelog v1.2.3:</strong><br>
+                                ✅ Ultrasonic sensor accuracy improved by 15%<br>
+                                ✅ Bluetooth connection stability enhanced<br>
+                                ✅ Battery life extended by 20%<br>
+                                ✅ Added auto-calibration on startup<br>
+                                ✅ Fixed edge-case height reading issues
+                            </div>
+                            <div class="fw-progress" id="fwProgress">
+                                <div class="fw-bar" id="fwBar"></div>
+                            </div>
+                            <div style="color:var(--txt2);font-size:.9rem;margin-top:8px;margin-bottom:12px;" id="fwStatusText">Ready to update</div>
+                            <button class="fw-download-btn" id="fwDownloadBtn" onclick="startFirmwareUpdate()">⬇️ Download & Install Update</button>
+                        </div>
+                        <div id="fwUpToDate" style="display:none;text-align:center;padding:20px;color:#27ae60;font-weight:700;font-size:1.1rem;">
+                            ✅ Your device firmware is up to date!
+                        </div>
+                    </div>
+                    <div style="margin-top:14px;color:var(--txt2);font-size:.9rem;text-align:center;">
+                        💡 Connect your HeightMate device via Bluetooth to install firmware updates wirelessly
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM NAVIGATION BAR (GLASSMORPHIC DOCK) -->
+    <nav class="bottom-nav" id="bottomNav">
+        <button class="nav-item active" onclick="switchAppTab('dashboard')" id="nav-btn-dashboard">
+            <div class="icon-wrapper">
+                <svg viewBox="0 0 24 24" class="nav-svg"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+            </div>
+            <span class="nav-label">Dashboard</span>
+        </button>
+        <button class="nav-item" onclick="switchAppTab('analytics')" id="nav-btn-analytics">
+            <div class="icon-wrapper">
+                <svg viewBox="0 0 24 24" class="nav-svg"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+            </div>
+            <span class="nav-label">Analytics</span>
+        </button>
+        <button class="nav-item" onclick="switchAppTab('coach')" id="nav-btn-coach">
+            <div class="icon-wrapper">
+                <svg viewBox="0 0 24 24" class="nav-svg"><path d="M12 2a5 5 0 0 1 5 5v2a1 1 0 0 0 1 1h1a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-1a1 1 0 0 0-1 1v2a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2v-2a1 1 0 0 0-1-1H5a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h1a1 1 0 0 0 1-1V7a5 5 0 0 1 5-5z"/><path d="M9 11h.01M15 11h.01"/><path d="M9 15h6"/></svg>
+            </div>
+            <span class="nav-label">Coach</span>
+        </button>
+        <button class="nav-item" onclick="switchAppTab('family')" id="nav-btn-family">
+            <div class="icon-wrapper">
+                <svg viewBox="0 0 24 24" class="nav-svg"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <span class="nav-label">Family</span>
+        </button>
+        <button class="nav-item" onclick="switchAppTab('profile')" id="nav-btn-profile">
+            <div class="icon-wrapper">
+                <svg viewBox="0 0 24 24" class="nav-svg"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </div>
+            <span class="nav-label">Profile</span>
+        </button>
+    </nav>
+
+    <!-- FORGOT PASSWORD MODAL -->
+    <div class="modal" id="forgotModal">
+        <div class="modal-box">
+            <div class="modal-title">Reset Password 🔑</div>
+            <p style="text-align:center;color:var(--txt2);margin-bottom:20px;">Enter your email address and we'll send
+                you a link to reset your password.</p>
+            <input class="inp" id="forgotEmail" type="email" placeholder="Your email address">
+            <div id="forgotMsg"></div>
+            <div class="modal-btns">
+                <button class="btn btn-sec" style="flex:1"
+                    onclick="document.getElementById('forgotModal').classList.remove('open')">Cancel</button>
+                <button class="btn" style="flex:1" onclick="sendPasswordReset()">📧 Send Reset Link</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHANGE PASSWORD MODAL -->
+    <div class="modal" id="changePassModal">
+        <div class="modal-box">
+            <div class="modal-title">Change Password 🔒</div>
+            <label class="form-label">Current Password:</label>
+            <input class="inp" id="cpCurrent" type="password" placeholder="Current password">
+            <label class="form-label">New Password:</label>
+            <input class="inp" id="cpNew" type="password" placeholder="New password (min 6 chars)">
+            <label class="form-label">Confirm New Password:</label>
+            <input class="inp" id="cpConfirm" type="password" placeholder="Confirm new password">
+            <div id="cpMsg"></div>
+            <div class="modal-btns">
+                <button class="btn btn-sec" style="flex:1"
+                    onclick="document.getElementById('changePassModal').classList.remove('open')">Cancel</button>
+                <button class="btn" style="flex:1" onclick="changePassword()">🔒 Update Password</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="addModal">
+        <div class="modal-box">
+            <div class="modal-title">Add New Kid Profile 🎨</div>
+            <label class="form-label">Name:</label>
+            <input class="inp" id="pName" type="text" placeholder="Kid's name">
+            <div class="form-row">
+                <div>
+                    <label class="form-label">Age:</label>
+                    <input class="inp" id="pAge" type="number" placeholder="Age" min="1" max="20">
+                </div>
+                <div>
+                    <label class="form-label">Birthdate:</label>
+                    <input class="inp" id="pBirth" type="date">
+                </div>
+            </div>
+            <label class="form-label">Gender:</label>
+            <div class="gender-row">
+                <div class="gender-btn" onclick="selGender(this,'male')">👦 Boy</div>
+                <div class="gender-btn" onclick="selGender(this,'female')">👧 Girl</div>
+                <div class="gender-btn" onclick="selGender(this,'other')">🧒 Other</div>
+            </div>
+            <input type="hidden" id="pGender" value="">
+            <label class="form-label">Choose Avatar:</label>
+            <div class="av-grid" id="avGrid"></div>
+            <div class="modal-btns">
+                <button class="btn btn-sec" style="flex:1" onclick="closeAddModal()">Cancel</button>
+                <button class="btn" style="flex:1" onclick="saveProfile()">Create! 🎉</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT PROFILE MODAL -->
+    <div class="modal" id="editModal">
+        <div class="modal-box">
+            <div class="modal-title">Edit Profile ✏️</div>
+            <label class="form-label">Name:</label>
+            <input class="inp" id="eName" type="text" placeholder="Kid's name">
+            <div class="form-row">
+                <div>
+                    <label class="form-label">Age:</label>
+                    <input class="inp" id="eAge" type="number" placeholder="Age" min="1" max="20">
+                </div>
+                <div>
+                    <label class="form-label">Birthdate:</label>
+                    <input class="inp" id="eBirth" type="date">
+                </div>
+            </div>
+            <label class="form-label">Gender:</label>
+            <div class="gender-row" id="editGenderRow">
+                <div class="gender-btn" onclick="selGender(this,'male','edit')">👦 Boy</div>
+                <div class="gender-btn" onclick="selGender(this,'female','edit')">👧 Girl</div>
+                <div class="gender-btn" onclick="selGender(this,'other','edit')">🧒 Other</div>
+            </div>
+            <input type="hidden" id="eGender" value="">
+            <label class="form-label">Choose Avatar:</label>
+            <div class="av-grid" id="eAvGrid"></div>
+            <div class="modal-btns">
+                <button class="btn btn-sec" style="flex:1" onclick="closeEditModal()">Cancel</button>
+                <button class="btn" style="flex:1" onclick="updateProfile()">Save 💾</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- EDIT FAMILY MODAL -->
+    <div class="modal" id="familyModal">
+        <div class="modal-box">
+            <div class="modal-title">Edit Family Name ✏️</div>
+            <label class="form-label">Family Name:</label>
+            <input class="inp" id="famInput" type="text" placeholder="Family Name">
+            <div class="modal-btns">
+                <button class="btn btn-sec" style="flex:1" onclick="closeFamilyModal()">Cancel</button>
+                <button class="btn" style="flex:1" onclick="saveFamilyName()">Save 💾</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DELETE PROFILE MODAL -->
+    <div class="modal" id="deleteModal">
+        <div class="modal-box">
+            <div class="modal-title">Delete Profile 🗑️</div>
+            <p style="text-align:center;font-size:1.1rem;color:var(--txt2);margin-bottom:20px;">
+                Are you sure you want to delete<br>
+                <strong style="font-size:1.5rem;color:var(--pink)" id="delName"></strong>?<br><br>
+                ⚠️ All measurements will be permanently lost!
+            </p>
+            <div class="modal-btns">
+                <button class="btn btn-sec" style="flex:1" onclick="closeDelModal()">Cancel</button>
+                <button class="btn btn-danger" style="flex:1" onclick="confirmDelete()">Delete 🗑️</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/who_data.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/profiles.js"></script>
+    <script src="js/db.js"></script>
+    <script src="js/auth.js?v=6.1"></script>
+    <script src="js/bleController.js"></script>
+    <script src="js/otaController.js"></script>
+    <script src="js/uiHooks.js"></script>
+    <script src="js/app.js?v=6.1"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js');
+            });
+        }
+    </script>
+</body>
+
+</html>
